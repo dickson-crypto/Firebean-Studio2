@@ -1,30 +1,331 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22grad%22 x1=%220%25%22 y1=%22100%25%22 x2=%22100%25%22 y2=%220%25%22><stop offset=%220%25%22 style=%22stop-color:%23ea580c;stop-opacity:1%22 /><stop offset=%22100%25%22 style=%22stop-color:%23fbbf24;stop-opacity:1%22 /></linearGradient></defs><path d=%22M50 5 C50 5 20 40 20 65 A30 30 0 0 0 80 65 C80 40 50 5 50 5 Z%22 fill=%22url(%23grad)%22 /><circle cx=%2250%22 cy=%2265%22 r=%2215%22 fill=%22%23fff%22 opacity=%220.3%22 /></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Firebean Studio</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebean Studio 2 - Standalone</title>
     <script src="https://cdn.tailwindcss.com"></script>
-  <script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.0.4",
-    "vite": "https://aistudiocdn.com/vite@^7.1.10",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.545.0",
-    "gifshot": "https://esm.sh/gifshot@0.4.5"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;400;500;600;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles with hardcoded fallbacks to prevent "all black" issues */
+        :root {
+            --bg-color: #ECF0F3;
+            --text-primary: #4A5568;
+            --text-secondary: #718096;
+            --shadow-light: #FFFFFF;
+            --shadow-dark: #D1D9E6;
+            --primary-color: #EF4444;
+        }
+
+        body {
+            background-color: #ECF0F3; /* Hardcoded fallback */
+            background-color: var(--bg-color);
+            color: #4A5568; /* Hardcoded fallback */
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Neumorphism */
+        .neu-flat {
+            background: #ECF0F3;
+            box-shadow: 10px 10px 20px #D1D9E6, -10px -10px 20px #FFFFFF;
+            border-radius: 20px;
+        }
+
+        .neu-pressed {
+            background: #ECF0F3;
+            box-shadow: inset 5px 5px 10px #D1D9E6, inset -5px -5px 10px #FFFFFF;
+            border-radius: 15px;
+        }
+
+        /* Claymorphism */
+        .clay-card {
+            background: #ECF0F3;
+            border-radius: 24px;
+            box-shadow: 20px 20px 40px #D1D9E6, -20px -20px 40px #FFFFFF;
+            padding: 1.5rem;
+        }
+
+        .clay-btn-primary {
+            background: #EF4444;
+            color: white;
+            border-radius: 9999px;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .clay-btn-primary:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .clay-btn-secondary {
+            background: #ECF0F3;
+            color: #4A5568;
+            border-radius: 9999px;
+            box-shadow: 4px 4px 8px #D1D9E6, -4px -4px 8px #FFFFFF;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .clay-input {
+            background: #ECF0F3;
+            border-radius: 12px;
+            box-shadow: inset 3px 3px 6px #D1D9E6, inset -3px -3px 6px #FFFFFF;
+            border: none;
+            padding: 1rem;
+            width: 100%;
+            outline: none;
+            color: #4A5568;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
 </head>
-  <body class="bg-black text-white">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+<body class="p-4 md:p-8">
+    <div id="app-container" class="max-w-4xl mx-auto w-full flex-grow">
+        <!-- Content will be rendered here -->
+        <div id="loading-screen" class="flex flex-col items-center justify-center py-40">
+            <h1 class="text-2xl font-bold opacity-50">Initializing Firebean Studio...</h1>
+        </div>
+    </div>
+
+    <!-- API Modal -->
+    <div id="api-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="clay-card max-w-md w-full text-center animate-fadeIn">
+            <div class="neu-pressed p-6 rounded-full mb-6 mx-auto w-fit">
+                <i data-lucide="key" class="w-10 h-10 text-[#EF4444]"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">API Key Required</h2>
+            <p class="text-sm text-gray-600 mb-6">Please enter your Gemini API Key to enable image generation. Your key is stored locally.</p>
+            <input type="password" id="api-key-input" class="clay-input mb-6" placeholder="Paste your API key here...">
+            <button onclick="saveApiKey()" class="w-full clay-btn-primary py-4 font-bold text-lg">Save & Start Studio</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Config ---
+        const PLACEHOLDER_KEY = '{{GEMINI_API_KEY}}';
+        let API_KEY = PLACEHOLDER_KEY;
+        
+        // Check if placeholder was replaced
+        if (API_KEY.includes('{{') || !API_KEY) {
+            API_KEY = localStorage.getItem('GEMINI_API_KEY_STANDALONE') || '';
+        }
+
+        // --- State ---
+        let state = {
+            prompt: '',
+            style: 'none',
+            imageModel: 'gemini-2.5-flash-image',
+            loading: false,
+            result: null,
+            error: null,
+            refImages: []
+        };
+
+        // --- Logic ---
+        function saveApiKey() {
+            const val = document.getElementById('api-key-input').value.trim();
+            if (val) {
+                API_KEY = val;
+                localStorage.setItem('GEMINI_API_KEY_STANDALONE', val);
+                document.getElementById('api-modal').classList.add('hidden');
+                document.getElementById('api-modal').classList.remove('flex');
+                render();
+            } else {
+                alert("Please enter a valid API key.");
+            }
+        }
+
+        async function generate() {
+            if (!API_KEY) {
+                showApiModal();
+                return;
+            }
+            if (!state.prompt.trim()) {
+                alert("Please enter a description for the image.");
+                return;
+            }
+
+            state.loading = true;
+            state.error = null;
+            render();
+
+            try {
+                const parts = [];
+                // Add reference images if any
+                state.refImages.forEach(img => {
+                    parts.push({ inline_data: { mime_type: img.type, data: img.base64 } });
+                });
+                
+                let fullPrompt = state.prompt;
+                if (state.style !== 'none') fullPrompt += ` in a ${state.style} style`;
+                parts.push({ text: fullPrompt });
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${state.imageModel}:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts }],
+                        generationConfig: { 
+                            image_config: { 
+                                aspect_ratio: "1:1",
+                                ...(state.imageModel.includes('3.1') ? { image_size: "1K" } : {})
+                            } 
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
+                
+                const imgPart = data.candidates?.[0]?.content?.parts?.find(p => p.inline_data);
+                if (!imgPart) throw new Error("No image was found in the AI response.");
+                
+                state.result = `data:${imgPart.inline_data.mime_type};base64,${imgPart.inline_data.data}`;
+            } catch (e) {
+                console.error(e);
+                state.error = e.message;
+            } finally {
+                state.loading = false;
+                render();
+            }
+        }
+
+        function showApiModal() {
+            const modal = document.getElementById('api-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // --- Render ---
+        function render() {
+            const container = document.getElementById('app-container');
+            
+            if (state.loading) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-32 animate-fadeIn">
+                        <div class="w-20 h-20 neu-flat flex items-center justify-center mb-8 relative">
+                            <div class="absolute inset-2 rounded-full border-4 border-[#D1D9E6] border-t-[#EF4444] animate-spin"></div>
+                            <i data-lucide="wand-2" class="w-8 h-8 text-[#EF4444]"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold mb-2">Generating...</h2>
+                        <p class="text-gray-500 animate-pulse italic">Consulting the creative spirits</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            if (state.error) {
+                container.innerHTML = `
+                    <div class="clay-card max-w-lg mx-auto text-center animate-fadeIn mt-20">
+                        <div class="neu-pressed p-4 rounded-full w-fit mx-auto mb-6">
+                            <i data-lucide="alert-circle" class="w-10 h-10 text-red-500"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-red-500 mb-4">System Glitch</h2>
+                        <p class="text-gray-600 mb-8">${state.error}</p>
+                        <button onclick="state.error=null;render()" class="w-full clay-btn-primary py-4 font-bold">Try Again</button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            if (state.result) {
+                container.innerHTML = `
+                    <div class="animate-fadeIn max-w-2xl mx-auto">
+                        <div class="clay-card flex flex-col items-center">
+                            <div class="flex w-full justify-between items-center mb-6">
+                                <button onclick="state.result=null;render()" class="clay-btn-secondary px-4 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                                    <i data-lucide="plus" class="w-3 h-3"></i> New
+                                </button>
+                                <span class="text-xs font-mono text-gray-400">COMPLETE</span>
+                            </div>
+                            <div class="w-full aspect-square rounded-2xl overflow-hidden neu-pressed p-2 mb-8">
+                                <img src="${state.result}" class="w-full h-full object-contain rounded-xl shadow-lg">
+                            </div>
+                            <div class="flex gap-4 w-full">
+                                <button onclick="generate()" class="flex-1 clay-btn-secondary py-4 font-bold flex items-center justify-center gap-2">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Retry
+                                </button>
+                                <a href="${state.result}" download="firebean-studio.png" class="flex-[2] clay-btn-primary py-4 font-bold flex items-center justify-center gap-2 text-center">
+                                    <i data-lucide="download" class="w-4 h-4"></i> Download PNG
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="animate-fadeIn">
+                    <header class="text-center mb-12">
+                        <div class="neu-flat inline-block px-10 py-5 mb-4">
+                            <h1 class="text-4xl font-black tracking-tight">Firebean <span class="font-light opacity-70">Studio</span> <span class="text-[#EF4444]">2</span></h1>
+                        </div>
+                        <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400">Standalone Creative Engine</p>
+                    </header>
+
+                    <div class="clay-card space-y-8">
+                        <div class="space-y-3">
+                            <label class="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Image Description</label>
+                            <textarea oninput="state.prompt=this.value" class="clay-input h-40 text-lg" placeholder="Describe your masterpiece in detail...">${state.prompt}</textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-3">
+                                <label class="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Artistic Style</label>
+                                <select onchange="state.style=this.value" class="clay-input appearance-none cursor-pointer">
+                                    <option value="none">No Specific Style</option>
+                                    <option value="cinematic">Cinematic / Realistic</option>
+                                    <option value="cartoon">Cartoon / 3D Render</option>
+                                    <option value="cyberpunk">Cyberpunk / Neon</option>
+                                    <option value="vintage">Vintage / Retro</option>
+                                    <option value="surreal">Surreal / Abstract</option>
+                                </select>
+                            </div>
+                            <div class="space-y-3">
+                                <label class="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">AI Engine</label>
+                                <select onchange="state.imageModel=this.value" class="clay-input appearance-none cursor-pointer">
+                                    <option value="gemini-2.5-flash-image">Lite 2.5 (Fast)</option>
+                                    <option value="gemini-3.1-flash-image-preview">Nano Banana 2 (High Quality)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button onclick="generate()" class="w-full clay-btn-primary py-5 font-black text-xl tracking-widest uppercase shadow-xl hover:-translate-y-1 transition-transform">
+                            Ignite Generation
+                        </button>
+                    </div>
+                </div>
+            `;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // --- Init ---
+        window.onload = () => {
+            if (!API_KEY || API_KEY.includes('{{')) {
+                showApiModal();
+            }
+            render();
+        };
+    </script>
+</body>
 </html>

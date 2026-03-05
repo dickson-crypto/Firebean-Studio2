@@ -31,7 +31,7 @@ if prompt := st.chat_input("How can I help you today?"):
 
     # Call Gemini API
     try:
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
         
         with st.chat_message("assistant"):
